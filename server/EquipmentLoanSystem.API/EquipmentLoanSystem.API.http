@@ -1,0 +1,17 @@
+@api = http://localhost:5000
+
+### Login (User)
+POST {{api}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "user@example.com", "password": "123456" }
+
+### Items page 1
+GET {{api}}/api/items?page=1&pageSize=6&sortBy=name
+
+### Loan item 1 (paste token)
+POST {{api}}/api/loans
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{ "itemId": 1 }

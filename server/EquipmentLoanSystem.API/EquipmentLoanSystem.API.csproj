@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- dotnet user-secrets init יוצר מזהה משלו; זה מזהה ברירת מחדל קבוע לפרויקט -->
+    <UserSecretsId>equipment-loan-system-api-6f3c2a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.14" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EquipmentLoanSystem.Core\EquipmentLoanSystem.Core.csproj" />
+    <ProjectReference Include="..\EquipmentLoanSystem.Service\EquipmentLoanSystem.Service.csproj" />
+    <!-- Data מוכר ל-API רק לצורך רישום השירותים ב-Program.cs -->
+    <ProjectReference Include="..\EquipmentLoanSystem.Data\EquipmentLoanSystem.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="nlog.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
