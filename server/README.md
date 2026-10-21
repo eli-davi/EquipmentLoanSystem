@@ -1,6 +1,6 @@
 # Equipment Loan System – Web API
 
-מערכת להשאלת ציוד: משתמשים מתחברים, צופים ברשימת הציוד (עם חיפוש, מיון ו-pagination מול בסיס הנתונים) ומשאילים או מחזירים פריטים. מנהל (Admin) מוסיף, מעדכן ומוחק פריטים ורואה את כל ההשאלות. השרת בנוי ב-ASP.NET Core 8 בארבע שכבות (Core / Data / Service / API) עם EF Core ו-SQL Server, JWT, AutoMapper, NLog ובדיקות xUnit + Moq.
+מערכת להשאלת ציוד: משתמשים מתחברים, צופים ברשימת הציוד (עם חיפוש, מיון ו-pagination מול בסיס הנתונים) ומשאילים או מחזירים פריטים. מנהל (Admin) מוסיף, מעדכן ומוחק פריטים ורואה את כל ההשאלות. השרת בנוי ב-ASP.NET Core 8 בארבע שכבות (Core / Data / Service / API) עם EF Core ו-PostgreSQL, JWT, AutoMapper, NLog ובדיקות xUnit + Moq.
 
 ## המשאב המוגבל והטיפול בתחרות
 
@@ -19,32 +19,36 @@
 
 ## הרצה מקומית
 
-**דרישות:** .NET 8 SDK ו-SQL Server LocalDB (מותקן עם Visual Studio). אפשר להשתמש גם ב-SQL Server Express (ראו בהמשך).
+**דרישות:** .NET 8 SDK ו-PostgreSQL (מקומי, או בסיס נתונים חינמי בענן כמו Neon / Supabase).
 
 ```bash
+# מחרוזת החיבור נשמרת ב-User Secrets ולא ב-repo:
+dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=EquipmentLoanDb;Username=postgres;Password=<הסיסמה>" --project EquipmentLoanSystem.API
+dotnet user-secrets set "JwtSettings:Secret" "<מחרוזת אקראית של 32 תווים לפחות>" --project EquipmentLoanSystem.API
 
-# הרצה
 dotnet run --project EquipmentLoanSystem.API --launch-profile http
 ```
 
 - Swagger: http://localhost:5000/swagger
-- **אין צורך להריץ `database update`.** בעלייה, השרת מריץ `Database.MigrateAsync()`, יוצר את בסיס הנתונים וטוען את כל הציוד, הקטגוריות ומשתמשי הדמו מתוך הקוד (`SeedData` ב-`AppDbContext.cs`).
-- הלוגים נכתבים ל-`EquipmentLoanSystem.API/bin/.../logs/`: הקובץ `app-*.log` מכיל הכול, והקובץ `problems-*.log` מכיל רק Warning ו-Error.
+- **אין צורך להריץ `database update`.** בעלייה, השרת מריץ `Database.MigrateAsync()`, יוצר את הטבלאות וטוען את כל הציוד, הקטגוריות ומשתמשי הדמו מתוך הקוד (`SeedData` ב-`AppDbContext.cs`).
+- concurrency token: עמודת `Version` (Guid) שמנוהלת בקוד, ולכן מתאימה ל-PostgreSQL (שבו אין `rowversion`).
 
-### סודות (User Secrets)
-אין סוד ב-repo. בפיתוח, אם לא מוגדר מפתח JWT, השרת יוצר מפתח אקראי לזמן הריצה, כך שאפשר להריץ מיד אחרי clone. כדי להגדיר מפתח קבוע:
+### הרצה בענן
+משתני סביבה שצריך להגדיר בשרת (בפלטפורמת האירוח, לא בקוד):
 
-```bash
-dotnet user-secrets set "JwtSettings:Secret" "<מחרוזת אקראית של 32 תווים לפחות>" --project EquipmentLoanSystem.API
-# שימוש ב-SQL Server Express במקום LocalDB:
-dotnet user-secrets set "ConnectionStrings:Default" "Server=localhost\SQLEXPRESS;Database=EquipmentLoanDb;Trusted_Connection=True;TrustServerCertificate=True" --project EquipmentLoanSystem.API
-```
+| משתנה | ערך |
+|---|---|
+| `ConnectionStrings__Default` | מחרוזת החיבור של PostgreSQL בענן (כולל `SSL Mode=Require`) |
+| `JwtSettings__Secret` | מחרוזת אקראית של 32 תווים לפחות |
+| `Cors__AllowedOrigins__0` | כתובת הלקוח, למשל `https://my-client.netlify.app` |
+
+בשורש ה-solution יש `Dockerfile` לפלטפורמות שמריצות .NET דרך Docker (למשל Render).
 
 ### בדיקות
 ```bash
 dotnet test
 ```
-בדיקות הקונקרנטיות רצות מול SQLite in-memory (בסיס נתונים רלציוני אמיתי) ולא דורשות SQL Server.
+בדיקות הקונקרנטיות רצות מול SQLite in-memory (בסיס נתונים רלציוני אמיתי) ולא דורשות PostgreSQL.
 
 ## משתמשי דמו
 

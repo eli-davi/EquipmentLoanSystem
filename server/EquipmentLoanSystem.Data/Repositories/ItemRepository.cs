@@ -22,8 +22,9 @@ namespace EquipmentLoanSystem.Data.Repositories
             // ---------- סינון ----------
             if (!string.IsNullOrWhiteSpace(query.Search))
             {
-                var term = query.Search.Trim();
-                items = items.Where(i => i.Name.Contains(term) || i.Description.Contains(term));
+                // ב-PostgreSQL השוואת טקסט רגישה לאותיות גדולות/קטנות, לכן משווים באותיות קטנות
+                var term = query.Search.Trim().ToLower();
+                items = items.Where(i => i.Name.ToLower().Contains(term) || i.Description.ToLower().Contains(term));
             }
 
             if (query.CategoryId.HasValue)

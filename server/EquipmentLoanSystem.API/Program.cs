@@ -112,13 +112,14 @@ try
     });
 
     // ---------- 6. EF Core: connection string מהקונפיגורציה בלבד ----------
-    var connectionString = builder.Configuration.GetConnectionString("Default")
+    var rawConnectionString = builder.Configuration.GetConnectionString("Default")
         ?? throw new InvalidOperationException(
-            "ConnectionStrings:Default is missing. Set it in appsettings.Development.json or with dotnet user-secrets.");
+            "ConnectionStrings:Default is missing. Set it with dotnet user-secrets, or in the cloud with the environment variable ConnectionStrings__Default.");
+    var connectionString = EquipmentLoanSystem.API.Extensions.ConnectionStringHelper.ToNpgsql(rawConnectionString);
 
     // DbContext = Scoped (ברירת המחדל של AddDbContext): מופע אחד לכל בקשת HTTP
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)));
+        options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)));
 
     // ---------- 7. DI: interfaces ב-Core, מימושים ב-Data/Service ----------
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -156,9 +157,9 @@ try
         startupLogger.LogInformation("Database is ready");
     }
 
-    
-    app.UseMiddleware<ErrorHandlingMiddleware>();  
-    app.UseMiddleware<CorrelationIdMiddleware>();   
+    // ---------- 9. Pipeline - הסדר חשוב ----------
+    app.UseMiddleware<ErrorHandlingMiddleware>();   // ראשון: תופס חריגות מכל מה שאחריו
+    app.UseMiddleware<CorrelationIdMiddleware>();   // CorrelationId לכל בקשה + לוג בקשה נכנסת
 
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -167,13 +168,12 @@ try
         c.RoutePrefix = "swagger";
     });
 
-    if (!app.Environment.IsDevelopment())
-        app.UseHttpsRedirection();
+    // בענן (Render/Railway וכו') ה-HTTPS מטופל ע"י הפלטפורמה לפני האפליקציה, ולכן אין הפניה ל-HTTPS בקוד
 
     app.UseCors("Client");
-    app.UseAuthentication();  
+    app.UseAuthentication();   // authentication לפני authorization
     app.UseAuthorization();
-app.MapGet("/", () => Results.Redirect("/swagger"));
+
     app.MapControllers();
 
     await app.RunAsync();

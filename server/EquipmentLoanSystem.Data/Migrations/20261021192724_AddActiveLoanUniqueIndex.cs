@@ -19,7 +19,7 @@ namespace EquipmentLoanSystem.Data.Migrations
                 table: "Loans",
                 column: "ItemCopyId",
                 unique: true,
-                filter: "[Status] = 0");
+                filter: "\"Status\" = 0");
         }
 
         /// <inheritdoc />

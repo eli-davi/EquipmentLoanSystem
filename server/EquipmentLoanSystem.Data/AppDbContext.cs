@@ -83,11 +83,11 @@ namespace EquipmentLoanSystem.Data
                  .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasIndex(l => new { l.MemberId, l.Status });
-                
+
                 // הגנה נוספת ברמת בסיס הנתונים: לכל עותק לכל היותר השאלה פעילה אחת
                 e.HasIndex(l => l.ItemCopyId)
                  .IsUnique()
-                 .HasFilter("[Status] = 0")
+               .HasFilter("\"Status\" = 0")
                  .HasDatabaseName("IX_Loans_ItemCopyId_ActiveUnique");
             });
 

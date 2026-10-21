@@ -1,26 +1,13 @@
-
-# Build stage
+# בנייה
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-
 COPY . .
+RUN dotnet publish EquipmentLoanSystem.API/EquipmentLoanSystem.API.csproj -c Release -o /app
 
-RUN dotnet restore EquipmentLoanSystem.API/EquipmentLoanSystem.API.csproj
-
-RUN dotnet publish EquipmentLoanSystem.API/EquipmentLoanSystem.API.csproj \
-    -c Release \
-    -o /app/publish \
-    --no-restore
-
-# Runtime stage
+# הרצה
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-
-COPY --from=build /app/publish .
-
-ENV ASPNETCORE_URLS=http://0.0.0.0:10000
+COPY --from=build /app .
+# הפלטפורמה (למשל Render) קובעת את הפורט במשתנה PORT; ברירת מחדל 8080
 ENV ASPNETCORE_ENVIRONMENT=Production
-
-EXPOSE 10000
-
-ENTRYPOINT ["dotnet", "EquipmentLoanSystem.API.dll"]
+CMD ASPNETCORE_HTTP_PORTS=${PORT:-8080} dotnet EquipmentLoanSystem.API.dll
