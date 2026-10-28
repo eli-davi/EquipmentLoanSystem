@@ -173,7 +173,7 @@ try
     app.UseCors("Client");
     app.UseAuthentication();   // authentication לפני authorization
     app.UseAuthorization();
-
+   app.MapGet("/", () => Results.Redirect("/swagger"));
     app.MapControllers();
 
     await app.RunAsync();
