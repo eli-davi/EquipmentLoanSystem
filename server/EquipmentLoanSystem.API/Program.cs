@@ -173,7 +173,7 @@ try
     app.UseCors("Client");
     app.UseAuthentication();   // authentication לפני authorization
     app.UseAuthorization();
- app.MapGet("/", () => Results.Redirect("https://equipmentloansystems.onrender.com"));
+ app.MapGet("/", () => Results.Redirect("https://equipment-client.onrender.com"));
     app.MapControllers();
 
     await app.RunAsync();
